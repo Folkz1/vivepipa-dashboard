@@ -36,7 +36,7 @@ export default function Layout() {
           ))}
         </nav>
         <div className="p-3 text-xs text-pipa-100 opacity-50 border-t border-pipa-700">
-          Helena Bot v2
+          Sofia Bot v2
         </div>
       </aside>
 

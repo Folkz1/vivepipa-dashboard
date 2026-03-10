@@ -52,6 +52,8 @@ export default function Servicos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [keywordInput, setKeywordInput] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchServicos = () => {
     setLoading(true);
@@ -66,6 +68,7 @@ export default function Servicos() {
   const startCreate = () => {
     setEditing(null);
     setForm({ ...EMPTY_SERVICO });
+    setKeywordInput("");
     setCreating(true);
   };
 
@@ -91,6 +94,7 @@ export default function Servicos() {
       keywords: s.keywords || [],
       priority: s.priority || 1,
     });
+    setKeywordInput("");
   };
 
   const cancel = () => {
@@ -149,6 +153,18 @@ export default function Servicos() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const addKeyword = () => {
+    const kw = keywordInput.trim().toLowerCase();
+    if (kw && !form.keywords.includes(kw)) {
+      updateField("keywords", [...form.keywords, kw]);
+    }
+    setKeywordInput("");
+  };
+
+  const removeKeyword = (kw: string) => {
+    updateField("keywords", form.keywords.filter((k) => k !== kw));
+  };
+
   const isPasseio = form.category === "passeios";
 
   const passeios = servicos.filter((s) => s.category === "passeios");
@@ -159,9 +175,17 @@ export default function Servicos() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">
-          Serviços ({passeios.length} passeios, {transfers.length} transfers)
-        </h2>
+        <div>
+          <h2 className="text-xl font-bold">Serviços</h2>
+          <p className="text-sm text-gray-500">
+            {passeios.length} passeios, {transfers.length} transfers
+            {servicos.filter((s) => !s.ativo).length > 0 && (
+              <span className="text-red-500 ml-2">
+                ({servicos.filter((s) => !s.ativo).length} inativos)
+              </span>
+            )}
+          </p>
+        </div>
         <div className="flex gap-2">
           <select
             value={filter}
@@ -199,8 +223,21 @@ export default function Servicos() {
 
       {/* Form (create or edit) */}
       {(creating || editing) && (
-        <div className="bg-white rounded-lg shadow p-5 mb-6">
-          <h3 className="font-bold mb-4">{creating ? "Novo Serviço" : `Editar: ${editing!.nome_servico}`}</h3>
+        <div className="bg-white rounded-lg shadow p-5 mb-6 border border-pipa-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-lg">
+              {creating ? "Novo Serviço" : `Editar: ${editing!.nome_servico}`}
+            </h3>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.ativo}
+                onChange={(e) => updateField("ativo", e.target.checked)}
+                className="rounded"
+              />
+              Ativo
+            </label>
+          </div>
 
           {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
@@ -211,7 +248,7 @@ export default function Servicos() {
                 type="text"
                 value={form.nome_servico}
                 onChange={(e) => updateField("nome_servico", e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="Ex: Passeio de Barco"
               />
             </div>
@@ -221,7 +258,7 @@ export default function Servicos() {
               <select
                 value={form.category}
                 onChange={(e) => updateField("category", e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
               >
                 <option value="passeios">Passeios</option>
                 <option value="transfers">Transfers</option>
@@ -237,7 +274,7 @@ export default function Servicos() {
                     step="0.01"
                     value={form.valor_adulto ?? ""}
                     onChange={(e) => updateField("valor_adulto", e.target.value ? parseFloat(e.target.value) : null)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="85.00"
                   />
                 </div>
@@ -248,7 +285,7 @@ export default function Servicos() {
                     step="0.01"
                     value={form.valor_crianca ?? ""}
                     onChange={(e) => updateField("valor_crianca", e.target.value ? parseFloat(e.target.value) : null)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="42.50"
                   />
                 </div>
@@ -261,7 +298,7 @@ export default function Servicos() {
                     type="text"
                     value={form.trecho_principal}
                     onChange={(e) => updateField("trecho_principal", e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="Aeroporto NAT -> Pipa"
                   />
                 </div>
@@ -272,7 +309,7 @@ export default function Servicos() {
                     step="0.01"
                     value={form.valor_trecho ?? ""}
                     onChange={(e) => updateField("valor_trecho", e.target.value ? parseFloat(e.target.value) : null)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="180.00"
                   />
                 </div>
@@ -282,7 +319,7 @@ export default function Servicos() {
                     type="text"
                     value={form.tipo_veiculo}
                     onChange={(e) => updateField("tipo_veiculo", e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="Spin, Van executiva..."
                   />
                 </div>
@@ -292,7 +329,7 @@ export default function Servicos() {
                     type="number"
                     value={form.capacidade_passageiros ?? ""}
                     onChange={(e) => updateField("capacidade_passageiros", e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                     placeholder="4"
                   />
                 </div>
@@ -305,18 +342,18 @@ export default function Servicos() {
                 type="text"
                 value={form.duracao}
                 onChange={(e) => updateField("duracao", e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="3 horas"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Prioridade</label>
+              <label className="block text-sm font-medium mb-1">Prioridade (1-10)</label>
               <input
                 type="number"
                 value={form.priority}
                 onChange={(e) => updateField("priority", parseInt(e.target.value) || 1)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 min={1}
                 max={10}
               />
@@ -328,7 +365,7 @@ export default function Servicos() {
                 value={form.descricao_completa}
                 onChange={(e) => updateField("descricao_completa", e.target.value)}
                 rows={3}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="Descrição detalhada do serviço..."
               />
             </div>
@@ -340,7 +377,7 @@ export default function Servicos() {
                   value={form.roteiro}
                   onChange={(e) => updateField("roteiro", e.target.value)}
                   rows={2}
-                  className="w-full border rounded px-3 py-2 text-sm"
+                  className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                   placeholder="Saída do Centro -> Praia do Amor -> Baía dos Golfinhos..."
                 />
               </div>
@@ -352,7 +389,7 @@ export default function Servicos() {
                 value={form.o_que_inclui}
                 onChange={(e) => updateField("o_que_inclui", e.target.value)}
                 rows={2}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="Transporte, guia, colete..."
               />
             </div>
@@ -363,7 +400,7 @@ export default function Servicos() {
                 type="text"
                 value={form.ponto_de_encontro}
                 onChange={(e) => updateField("ponto_de_encontro", e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="Praia do Centro de Pipa"
               />
             </div>
@@ -374,19 +411,64 @@ export default function Servicos() {
                 type="text"
                 value={form.observacoes}
                 onChange={(e) => updateField("observacoes", e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
                 placeholder="Informações adicionais..."
               />
             </div>
+
+            {/* Keywords */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-1">
+                Keywords (para busca da Sofia)
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={keywordInput}
+                  onChange={(e) => setKeywordInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); addKeyword(); }
+                  }}
+                  className="flex-1 border rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-pipa-500 focus:border-pipa-500 outline-none"
+                  placeholder="Digite e pressione Enter..."
+                />
+                <button
+                  type="button"
+                  onClick={addKeyword}
+                  className="px-3 py-1.5 bg-pipa-100 text-pipa-700 rounded text-sm hover:bg-pipa-200 transition-colors"
+                >
+                  Adicionar
+                </button>
+              </div>
+              {form.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {form.keywords.map((kw) => (
+                    <span
+                      key={kw}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-pipa-50 text-pipa-700 rounded text-xs border border-pipa-200"
+                    >
+                      {kw}
+                      <button
+                        type="button"
+                        onClick={() => removeKeyword(kw)}
+                        className="text-pipa-400 hover:text-red-500 font-bold"
+                      >
+                        x
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-5">
+          <div className="flex items-center gap-3 mt-5 pt-4 border-t">
             <button
               onClick={save}
               disabled={saving}
-              className="bg-pipa-600 text-white px-5 py-2 rounded hover:bg-pipa-700 disabled:opacity-50 transition-colors"
+              className="bg-pipa-600 text-white px-6 py-2 rounded font-medium hover:bg-pipa-700 disabled:opacity-50 transition-colors"
             >
-              {saving ? "Salvando..." : creating ? "Criar" : "Salvar"}
+              {saving ? "Salvando..." : creating ? "Criar Serviço" : "Salvar Alterações"}
             </button>
             <button
               onClick={cancel}
@@ -400,24 +482,33 @@ export default function Servicos() {
 
       {/* Services list */}
       {loading ? (
-        <div className="bg-white rounded-lg shadow p-10 text-center text-gray-400">
-          Carregando serviços...
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
+              <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
+              <div className="h-4 bg-gray-100 rounded w-2/3" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-10 text-center text-gray-400">
-          Nenhum serviço cadastrado
+          <p className="text-lg mb-2">Nenhum serviço cadastrado</p>
+          <p className="text-sm">Clique em "+ Novo Serviço" para começar</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((s) => (
             <div
               key={s.id}
-              className={`bg-white rounded-lg shadow overflow-hidden ${!s.ativo ? "opacity-60" : ""}`}
+              className={`bg-white rounded-lg shadow overflow-hidden transition-opacity ${!s.ativo ? "opacity-50" : ""}`}
             >
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
+              <div className="p-4">
+                <div className="flex items-start justify-between">
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold">{s.nome_servico}</p>
                       <span
                         className={`px-2 py-0.5 rounded text-xs font-medium ${
@@ -434,7 +525,7 @@ export default function Servicos() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500">
                       {s.category === "passeios" ? (
                         <>
                           Adulto: <b>R$ {s.valor_adulto != null ? Number(s.valor_adulto).toFixed(2) : "—"}</b>
@@ -451,38 +542,52 @@ export default function Servicos() {
                         </>
                       )}
                     </p>
-                    {s.descricao_completa && (
-                      <p className="text-xs text-gray-400 mt-1 truncate max-w-lg">
-                        {s.descricao_completa}
-                      </p>
-                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 ml-4">
+                    <button
+                      onClick={() => toggleAtivo(s)}
+                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                        s.ativo
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {s.ativo ? "Ativo" : "Inativo"}
+                    </button>
+                    <button
+                      onClick={() => startEdit(s)}
+                      className="px-3 py-1 rounded text-xs bg-pipa-100 text-pipa-700 hover:bg-pipa-200 transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => deleteServico(s)}
+                      className="px-3 py-1 rounded text-xs bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      Excluir
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => toggleAtivo(s)}
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                      s.ativo
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {s.ativo ? "Ativo" : "Inativo"}
-                  </button>
-                  <button
-                    onClick={() => startEdit(s)}
-                    className="px-3 py-1 rounded text-xs bg-pipa-100 text-pipa-700 hover:bg-pipa-200 transition-colors"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => deleteServico(s)}
-                    className="px-3 py-1 rounded text-xs bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                  >
-                    Excluir
-                  </button>
-                </div>
+                {/* Expanded details */}
+                {expandedId === s.id && (
+                  <div className="mt-3 pt-3 border-t text-sm text-gray-600 space-y-1">
+                    {s.descricao_completa && <p><b>Descrição:</b> {s.descricao_completa}</p>}
+                    {s.roteiro && <p><b>Roteiro:</b> {s.roteiro}</p>}
+                    {s.o_que_inclui && <p><b>Inclui:</b> {s.o_que_inclui}</p>}
+                    {s.ponto_de_encontro && <p><b>Ponto de encontro:</b> {s.ponto_de_encontro}</p>}
+                    {s.observacoes && <p><b>Obs:</b> {s.observacoes}</p>}
+                    {s.keywords && s.keywords.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <b>Keywords:</b>
+                        {s.keywords.map((kw) => (
+                          <span key={kw} className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">{kw}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
