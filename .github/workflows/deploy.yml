@@ -1,0 +1,16 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger EasyPanel Deploy
+        run: |
+          curl -s -X POST "http://95.111.249.160:3000/api/deploy/308df9cd457363a12b0936af3f2f0db29e4f9fd508c99c41"
+          echo "Deploy webhook triggered"
