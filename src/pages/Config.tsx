@@ -4,7 +4,8 @@ import { api } from "../api";
 export default function Config() {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [active, setActive] = useState(true);
-  const [model, setModel] = useState("anthropic/claude-sonnet-4");
+  const [model, setModel] = useState("gpt-4.1-mini");
+  const [notificationPhone, setNotificationPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -14,7 +15,8 @@ export default function Config() {
       .then((d) => {
         setSystemPrompt(d.system_prompt || "");
         setActive(d.active);
-        setModel(d.model || "anthropic/claude-sonnet-4");
+        setModel(d.model || "gpt-4.1-mini");
+        setNotificationPhone(d.notification_phone || "");
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -23,7 +25,12 @@ export default function Config() {
     setSaving(true);
     setSaved(false);
     try {
-      await api.updateConfig({ system_prompt: systemPrompt || null, active, model });
+      await api.updateConfig({
+        system_prompt: systemPrompt || null,
+        active,
+        model,
+        notification_phone: notificationPhone || null,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -36,14 +43,14 @@ export default function Config() {
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-xl font-bold mb-4">Configuracao do Bot</h2>
+      <h2 className="text-xl font-bold mb-4">Configuração do Bot</h2>
 
       <div className="bg-white rounded-lg shadow p-5 space-y-5">
         {/* Active toggle */}
         <div className="flex items-center justify-between">
           <div>
             <p className="font-semibold">Bot Ativo</p>
-            <p className="text-sm text-gray-500">Quando desligado, mensagens nao sao respondidas</p>
+            <p className="text-sm text-gray-500">Quando desligado, mensagens não são respondidas</p>
           </div>
           <button
             onClick={() => setActive(!active)}
@@ -67,24 +74,40 @@ export default function Config() {
             onChange={(e) => setModel(e.target.value)}
             className="w-full border rounded px-3 py-2 text-sm"
           >
-            <option value="anthropic/claude-sonnet-4">Claude Sonnet 4 (recomendado)</option>
-            <option value="anthropic/claude-haiku-4">Claude Haiku 4 (rapido/barato)</option>
-            <option value="x-ai/grok-4.1-fast">Grok 4.1 Fast (ultra rapido)</option>
-            <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
+            <option value="gpt-4.1-mini">GPT-4.1 Mini (rápido e barato)</option>
+            <option value="gpt-4.1">GPT-4.1 (equilibrado)</option>
+            <option value="gpt-4o">GPT-4o (multimodal)</option>
+            <option value="gpt-4o-mini">GPT-4o Mini (econômico)</option>
+            <option value="o4-mini">o4 Mini (raciocínio)</option>
           </select>
+        </div>
+
+        {/* Notification phone */}
+        <div>
+          <label className="block font-semibold mb-1">Telefone para Notificações</label>
+          <p className="text-xs text-gray-500 mb-2">
+            Número que recebe alertas quando um lead é qualificado (com código do país, ex: 558481559502)
+          </p>
+          <input
+            type="text"
+            value={notificationPhone}
+            onChange={(e) => setNotificationPhone(e.target.value)}
+            placeholder="558481559502"
+            className="w-full border rounded px-3 py-2 text-sm"
+          />
         </div>
 
         {/* System prompt */}
         <div>
           <label className="block font-semibold mb-1">System Prompt</label>
           <p className="text-xs text-gray-500 mb-2">
-            Deixe vazio para usar o prompt padrao da Helena. Customize para alterar o comportamento.
+            Deixe vazio para usar o prompt padrão da Helena. Personalize para alterar o comportamento do bot.
           </p>
           <textarea
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
             rows={16}
-            placeholder="Deixe vazio para prompt padrao..."
+            placeholder="Deixe vazio para prompt padrão..."
             className="w-full border rounded px-3 py-2 text-sm font-mono"
           />
         </div>

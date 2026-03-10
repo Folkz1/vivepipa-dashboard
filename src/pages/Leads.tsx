@@ -24,9 +24,18 @@ const STATUS_COLORS: Record<string, string> = {
   lost: "bg-red-100 text-red-700",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  new: "Novo",
+  contacted: "Contactado",
+  qualified: "Qualificado",
+  converted: "Convertido",
+  lost: "Perdido",
+};
+
 export default function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filter, setFilter] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const fetchLeads = () => {
@@ -45,7 +54,7 @@ export default function Leads() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Leads</h2>
+        <h2 className="text-xl font-bold">Leads ({leads.length})</h2>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -62,54 +71,92 @@ export default function Leads() {
 
       {leads.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-10 text-center text-gray-400">
-          Nenhum lead {filter ? `com status "${filter}"` : ""}
+          Nenhum lead {filter ? `com status "${STATUS_LABELS[filter] || filter}"` : ""}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left p-3">Nome</th>
-                <th className="text-left p-3">Telefone</th>
-                <th className="text-left p-3">Email</th>
-                <th className="text-left p-3">Servico</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Data</th>
-                <th className="text-left p-3">Acoes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((l) => (
-                <tr key={l.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">{l.full_name}</td>
-                  <td className="p-3 text-gray-600">{l.phone_number}</td>
-                  <td className="p-3 text-gray-600">{l.email}</td>
-                  <td className="p-3">{l.service_category}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[l.status] || "bg-gray-100"}`}>
-                      {l.status}
-                    </span>
-                  </td>
-                  <td className="p-3 text-gray-500">
+        <div className="space-y-3">
+          {leads.map((l) => (
+            <div key={l.id} className="bg-white rounded-lg shadow overflow-hidden">
+              <div
+                className="p-4 cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+                onClick={() => setExpanded(expanded === l.id ? null : l.id)}
+              >
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="font-semibold">{l.full_name || "Sem nome"}</p>
+                    <p className="text-sm text-gray-500">{l.phone_number}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[l.status] || "bg-gray-100"}`}>
+                    {STATUS_LABELS[l.status] || l.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={l.status}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      updateStatus(l.id, e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="border rounded px-2 py-1 text-xs"
+                  >
+                    <option value="new">Novo</option>
+                    <option value="contacted">Contactado</option>
+                    <option value="qualified">Qualificado</option>
+                    <option value="converted">Convertido</option>
+                    <option value="lost">Perdido</option>
+                  </select>
+                  <span className="text-gray-400 text-sm">
                     {new Date(l.created_at).toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="p-3">
-                    <select
-                      value={l.status}
-                      onChange={(e) => updateStatus(l.id, e.target.value)}
-                      className="border rounded px-2 py-1 text-xs"
-                    >
-                      <option value="new">Novo</option>
-                      <option value="contacted">Contactado</option>
-                      <option value="qualified">Qualificado</option>
-                      <option value="converted">Convertido</option>
-                      <option value="lost">Perdido</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                  <span className="text-gray-400">{expanded === l.id ? "▲" : "▼"}</span>
+                </div>
+              </div>
+
+              {expanded === l.id && (
+                <div className="border-t px-4 py-3 bg-gray-50 space-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-gray-500">Email:</span>{" "}
+                      <span className="font-medium">{l.email || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Serviço:</span>{" "}
+                      <span className="font-medium">{l.service_category || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Interesse:</span>{" "}
+                      <span className="font-medium">{l.service_interest || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Prioridade:</span>{" "}
+                      <span className="font-medium">{l.priority || "—"}</span>
+                    </div>
+                  </div>
+
+                  {l.qualification_data && Object.keys(l.qualification_data).length > 0 && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="text-gray-500 font-medium mb-1">Dados de Qualificação:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(l.qualification_data).map(([key, value]) => (
+                          <div key={key}>
+                            <span className="text-gray-400">{key}:</span>{" "}
+                            <span>{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {l.notes && (
+                    <div className="mt-2 pt-2 border-t">
+                      <span className="text-gray-500">Notas:</span> {l.notes}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

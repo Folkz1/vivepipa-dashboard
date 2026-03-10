@@ -91,7 +91,7 @@ export default function Conversations() {
                     {m.content}
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    {m.role === "assistant" ? "Helena" : "Usuario"} -{" "}
+                    {m.role === "assistant" ? "Helena" : "Usuário"} -{" "}
                     {new Date(m.created_at).toLocaleTimeString("pt-BR")}
                   </p>
                 </div>
