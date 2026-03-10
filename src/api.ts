@@ -25,4 +25,12 @@ export const api = {
     apiFetch(`/leads${status ? `?status=${status}` : ""}`),
   updateLead: (data: Record<string, unknown>) =>
     apiFetch("/leads", { method: "PUT", body: JSON.stringify(data) }),
+  getServicos: (category?: string, all?: boolean) =>
+    apiFetch(`/servicos?${category ? `category=${category}&` : ""}${all ? "all=true" : ""}`),
+  createServico: (data: Record<string, unknown>) =>
+    apiFetch("/servicos", { method: "POST", body: JSON.stringify(data) }),
+  updateServico: (data: Record<string, unknown>) =>
+    apiFetch("/servicos", { method: "PUT", body: JSON.stringify(data) }),
+  deleteServico: (id: string) =>
+    apiFetch("/servicos", { method: "DELETE", body: JSON.stringify({ id }) }),
 };
