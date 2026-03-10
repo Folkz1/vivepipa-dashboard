@@ -49,16 +49,19 @@ export default function Servicos() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<Omit<Servico, "id">>(EMPTY_SERVICO);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const fetchServicos = () => {
-    api.getServicos(filter || undefined, true)
-      .then((d) => setServicos(d.servicos))
-      .catch((e) => setError(e.message));
+    setLoading(true);
+    api.getServicos(undefined, true)
+      .then((d) => setServicos(d.servicos || []))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   };
 
-  useEffect(fetchServicos, [filter]);
+  useEffect(fetchServicos, []);
 
   const startCreate = () => {
     setEditing(null);
@@ -153,8 +156,6 @@ export default function Servicos() {
 
   const filtered = filter ? servicos.filter((s) => s.category === filter) : servicos;
 
-  if (error && !creating && !editing) return <p className="text-red-500">Erro: {error}</p>;
-
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -179,6 +180,18 @@ export default function Servicos() {
           </button>
         </div>
       </div>
+
+      {error && !creating && !editing && (
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded mb-4 text-sm flex items-center justify-between">
+          <span>Erro: {error}</span>
+          <button
+            onClick={() => { setError(""); fetchServicos(); }}
+            className="ml-3 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-xs font-medium transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
       {success && (
         <div className="bg-green-50 text-green-700 px-4 py-2 rounded mb-4 text-sm">{success}</div>
@@ -386,7 +399,11 @@ export default function Servicos() {
       )}
 
       {/* Services list */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="bg-white rounded-lg shadow p-10 text-center text-gray-400">
+          Carregando serviços...
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-10 text-center text-gray-400">
           Nenhum serviço cadastrado
         </div>
