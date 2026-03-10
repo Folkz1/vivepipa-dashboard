@@ -420,15 +420,15 @@ export default function Servicos() {
                     <p className="text-sm text-gray-500 mt-1">
                       {s.category === "passeios" ? (
                         <>
-                          Adulto: <b>R$ {s.valor_adulto?.toFixed(2) || "—"}</b>
+                          Adulto: <b>R$ {s.valor_adulto != null ? Number(s.valor_adulto).toFixed(2) : "—"}</b>
                           {" | "}
-                          Criança: <b>R$ {s.valor_crianca?.toFixed(2) || "—"}</b>
+                          Criança: <b>R$ {s.valor_crianca != null ? Number(s.valor_crianca).toFixed(2) : "—"}</b>
                           {s.duracao && <> | {s.duracao}</>}
                         </>
                       ) : (
                         <>
                           {s.trecho_principal && <>{s.trecho_principal} | </>}
-                          Valor: <b>R$ {s.valor_trecho?.toFixed(2) || "—"}</b>
+                          Valor: <b>R$ {s.valor_trecho != null ? Number(s.valor_trecho).toFixed(2) : "—"}</b>
                           {s.tipo_veiculo && <> | {s.tipo_veiculo}</>}
                           {s.capacidade_passageiros && <> | {s.capacidade_passageiros} pass.</>}
                         </>
