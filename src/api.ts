@@ -33,4 +33,8 @@ export const api = {
     apiFetch("/servicos", { method: "PUT", body: JSON.stringify(data) }),
   deleteServico: (id: string) =>
     apiFetch("/servicos", { method: "DELETE", body: JSON.stringify({ id }) }),
+  testBot: (message: string) =>
+    apiFetch("/test", { method: "POST", body: JSON.stringify({ message }) }),
+  clearTestConversation: () =>
+    apiFetch("/test", { method: "DELETE" }),
 };
