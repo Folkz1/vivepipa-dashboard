@@ -37,4 +37,13 @@ export const api = {
     apiFetch("/test", { method: "POST", body: JSON.stringify({ message }) }),
   clearTestConversation: () =>
     apiFetch("/test", { method: "DELETE" }),
+  submitFeedback: (data: {
+    message_id: string;
+    rating: "good" | "bad";
+    category?: string;
+    expected_response?: string;
+    comment?: string;
+  }) =>
+    apiFetch("/test/feedback", { method: "POST", body: JSON.stringify(data) }),
+  getFeedbackSummary: () => apiFetch("/test/feedback?summary=true"),
 };
