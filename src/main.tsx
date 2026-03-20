@@ -8,6 +8,7 @@ import Conversations from "./pages/Conversations";
 import Config from "./pages/Config";
 import Leads from "./pages/Leads";
 import Servicos from "./pages/Servicos";
+import Feedback from "./pages/Feedback";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/" element={<Navigate to="/analytics" replace />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/conversations" element={<Conversations />} />
+          <Route path="/feedback" element={<Feedback />} />
           <Route path="/config" element={<Config />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/servicos" element={<Servicos />} />

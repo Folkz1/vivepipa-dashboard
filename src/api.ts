@@ -46,4 +46,7 @@ export const api = {
   }) =>
     apiFetch("/test/feedback", { method: "POST", body: JSON.stringify(data) }),
   getFeedbackSummary: () => apiFetch("/test/feedback?summary=true"),
+  getFeedbacks: () => apiFetch("/test/feedback"),
+  generateImprovement: () =>
+    apiFetch("/test/feedback/improve", { method: "POST" }),
 };
